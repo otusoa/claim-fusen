@@ -1,0 +1,24 @@
+{
+  "name": "kari-fusen",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "typecheck": "pnpm --filter @kari-fusen/server typecheck",
+    "db:generate": "pnpm --filter @kari-fusen/server db:generate",
+    "db:check": "pnpm --filter @kari-fusen/server db:check",
+    "db:migrate": "pnpm --filter @kari-fusen/server db:migrate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.8.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.8.1",
+  "type": "module"
+}
