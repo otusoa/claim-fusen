@@ -1,0 +1,50 @@
+x-server: &server
+  image: "${COMPOSE_PROJECT_NAME:-claim-fusen}-backend:local"
+  build:
+    context: ./apps/server
+  environment:
+    DATABASE_URL: "${COMPOSE_DATABASE_URL:?COMPOSE_DATABASE_URLを.envに設定してください}"
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USERを.envに設定してください}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORDを.envに設定してください}"
+      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DBを.envに設定してください}"
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  migrate:
+    <<: *server
+    entrypoint: ["/app/migrate"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    <<: *server
+    environment:
+      DATABASE_URL: "${COMPOSE_DATABASE_URL:?COMPOSE_DATABASE_URLを.envに設定してください}"
+      PORT: "8080"
+      GIN_MODE: release
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+    stop_grace_period: 15s
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:

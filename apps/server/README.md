@@ -23,6 +23,76 @@ Go 1.27でコード生成を動かすため、Entが利用する `golang.org/x/t
 ルートのpnpmコマンドからも `pnpm db:generate`、`pnpm test`、`pnpm check` を実行できる。
 Backendの実行・生成にNodeのORMやTypeScriptは使用しない。
 
+## Backend起動
+
+### ComposeでDBとBackendを起動
+
+リポジトリのルートで実行する。既に `.env` がある場合は上書きせず、
+`.env.example` に追加された項目を既存の設定へ追記する。
+
+```sh
+cp .env.example .env
+docker compose config --quiet
+docker compose up --build -d
+docker compose ps -a
+docker compose logs db migrate backend
+curl http://127.0.0.1:8080/health
+```
+
+DBのhealthcheck成功後、専用の `migrate` サービスがSchemaを反映し、
+終了コード0を確認して `backend` が起動する。migrationが失敗するとBackendは起動しない。
+空の開発用DBとCompose専用のnamed volumeを使用し、既存DBの取り込みは行わない。
+公開先はローカルの `127.0.0.1` に限定する。
+
+`POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` と両接続URLの認証情報を揃える。
+`DATABASE_URL` はホスト用の `localhost`、`COMPOSE_DATABASE_URL` はコンテナ用の `db:5432`。
+パスワード等に `@` / `:` / `/` / `%` などの特殊文字がある場合、URL内ではパーセントエンコードし、
+`POSTGRES_PASSWORD` には元の文字列を設定する。`.env` 内の `$` を含む値は単引用符で囲む。
+`POSTGRES_PORT` を変えた場合はホスト用 `DATABASE_URL` のポートも変更する。
+`BACKEND_PORT` を変えた場合はcurlのポートを合わせる。
+PostgreSQLの初期ユーザー・DB・パスワード設定は空のvolumeへの初回起動時に適用される。
+データ保持後の `.env` 変更だけではDB内の認証情報は変更されない。
+
+コード変更後は `docker compose up --build -d` で再buildする。
+手動でmigrationを再実行する場合は、DB起動後に次を実行する。
+
+```sh
+docker compose up -d db
+docker compose run --rm migrate
+```
+
+通常の停止・再起動ではデータを残す。
+
+```sh
+docker compose down
+docker compose up --build -d
+```
+
+開発DBを完全に初期化する場合だけ `docker compose down --volumes` を実行する。
+この操作はComposeのDBデータを削除する。
+ホットリロードやFrontendのコンテナは今回導入していない。
+
+### ホスト上でGoを起動
+
+`apps/server` で `DATABASE_URL` を設定し、migrationを別途適用してから `go run .` で起動する。
+`.env` は自動では読み込まない。`PORT` は省略時に `8080` を使う。
+
+起動時に `internal/database.Open` で接続とPingを確認し、共有Ent ClientをProject Serviceへ渡す。
+Serviceの `List(context.Context)` でProject Queryを実行し、成功してからGinを起動する。
+DB未接続・未migrationの場合は原因をログに出して終了し、起動時の自動migrationは行わない。
+`GET /health` は従来どおり200と `{"message":"OK"}` を返す。
+
+SIGINT/SIGTERMを受けるとHTTPリクエストの終了を待ち、その後Ent ClientをCloseする。
+起動失敗時にも初期化済みClientをCloseする。
+RouterにはProject Serviceを渡しているため、今後のProject Handlerでは
+`c.Request.Context()` をServiceへ渡して同じClientを利用できる。今回はCRUD endpointを登録しない。
+
+```sh
+export DATABASE_URL='postgresql://postgres:postgres@localhost:5432/claim_fusen?sslmode=disable'
+go run ./cmd/migrate
+go run .
+```
+
 ## 開発用migration
 
 今回の方針は、新しい空の開発用PostgreSQL DBへEnt Schemaを反映すること。
@@ -83,8 +153,9 @@ type・noteを取得したい場合はClaimEvidenceを経由する。
 `DATABASE_URL` へのフォールバックはしない。
 
 ```sh
-TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/claim_fusen_test?sslmode=disable' go test ./... -count=1 -v
+TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:5432/claim_fusen_test?sslmode=disable' go test -p 1 ./... -count=1 -v
 ```
 
 『御教誡』サンプルの保存とClaim → ClaimEvidence → Evidence → Sourceの取得、
 Throughの双方向取得、更新日時、Relationの重複拒否と異なるtypeの保存、cascade/restrictを確認する。
+さらにBackend起動後のhealth応答と、停止後にPostgreSQL接続が解放されることを確認する。

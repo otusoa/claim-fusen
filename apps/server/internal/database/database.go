@@ -18,7 +18,8 @@ func Open(ctx context.Context, url string) (*ent.Client, error) {
 	}
 	pool, err := sql.Open("postgres", url)
 	if err != nil {
-		return nil, fmt.Errorf("open PostgreSQL: %w", err)
+		// ドライバの解析エラーには認証情報を含む元のURLが入る場合がある。
+		return nil, fmt.Errorf("invalid PostgreSQL connection configuration; check DATABASE_URL")
 	}
 	if err := pool.PingContext(ctx); err != nil {
 		pool.Close()
