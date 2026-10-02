@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "typecheck": "pnpm --filter @kari-fusen/server typecheck",
+    "check": "pnpm --filter @kari-fusen/server check",
+    "test": "pnpm --filter @kari-fusen/server test",
     "db:generate": "pnpm --filter @kari-fusen/server db:generate",
-    "db:check": "pnpm --filter @kari-fusen/server db:check",
     "db:migrate": "pnpm --filter @kari-fusen/server db:migrate"
   },
   "keywords": [],

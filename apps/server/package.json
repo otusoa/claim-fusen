@@ -3,20 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:check": "drizzle-kit check",
-    "db:migrate": "drizzle-kit migrate"
-  },
-  "dependencies": {
-    "dotenv": "^18.0.4",
-    "drizzle-orm": "^0.45.3",
-    "pg": "^8.23.0"
-  },
-  "devDependencies": {
-    "@types/node": "^26.6.3",
-    "@types/pg": "^8.23.1",
-    "drizzle-kit": "^0.31.11",
-    "typescript": "^7.0.2"
+    "check": "go vet ./...",
+    "test": "go test ./...",
+    "db:generate": "go generate ./ent",
+    "db:migrate": "go run ./cmd/migrate"
   }
 }
