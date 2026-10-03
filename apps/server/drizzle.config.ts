@@ -1,5 +1,8 @@
-import 'dotenv/config';
+import { fileURLToPath } from 'node:url';
+import { config } from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
+
+config({ path: fileURLToPath(new URL('../../.env', import.meta.url)) });
 
 // Generating migrations does not require a database connection.
 const databaseUrl = process.env.DATABASE_URL;

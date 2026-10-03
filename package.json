@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev:server": "DOTENV_CONFIG_PATH=\"$PWD/.env\" pnpm --filter @kari-fusen/server dev",
     "typecheck": "pnpm --filter @kari-fusen/server typecheck",
     "db:generate": "pnpm --filter @kari-fusen/server db:generate",
     "db:check": "pnpm --filter @kari-fusen/server db:check",
