@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev:server": "pnpm --filter @kari-fusen/server dev",
+    "build:server": "pnpm --filter @kari-fusen/server build",
+    "start:server": "pnpm --filter @kari-fusen/server start",
+    "test:server": "pnpm --filter @kari-fusen/server test",
     "typecheck": "pnpm --filter @kari-fusen/server typecheck",
     "db:generate": "pnpm --filter @kari-fusen/server db:generate",
     "db:check": "pnpm --filter @kari-fusen/server db:check",

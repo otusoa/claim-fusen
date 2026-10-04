@@ -1,18 +1,14 @@
 {
+  "extends": "nitro/tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
+    "paths": {
+      "~/*": ["./src/*"],
+      "~~/*": ["./*"]
+    },
     "types": [
       "node"
-    ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "rootDir": "./src",
-    "outDir": "./dist"
+    ]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "nitro.config.ts", "vitest.config.ts", "drizzle.config.ts"],
+  "exclude": ["node_modules", ".output"]
 }

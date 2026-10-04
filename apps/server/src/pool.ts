@@ -1,6 +1,5 @@
 import { Pool } from 'pg'
 import { createDb } from './db/index.js'
-import 'dotenv/config'
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl) {
