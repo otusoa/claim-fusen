@@ -1,0 +1,42 @@
+info:
+  name: Create Claim - Project not found (404)
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "projectId": "d711468b-127f-486d-9a8b-bd7dd21e8db2",
+        "title": "存在しないProjectへのClaim作成テスト",
+        "body": null,
+        "status": "active"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("存在しないProjectを404で拒否する", function () {
+          expect(res.getStatus()).to.equal(404);
+          expect(res.getBody()).to.equal("Project not found");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  UUID形式は正しいが、現在の開発DBに存在しないProjectのIDを指定している。
+  別のDBで使う場合も、指定したIDがGET `/api/projects`の一覧にないことを確認する。
+  Projectが見つからなければ404になり、Claimは保存されない。

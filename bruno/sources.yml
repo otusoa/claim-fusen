@@ -1,0 +1,56 @@
+info:
+  name: Create Source
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: http://localhost:3000/api/sources
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "本教大意",
+        "type": null,
+        "year": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Sourceを作成すると201を返す", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("作成したSourceの値とIDを返す", function () {
+          const body = res.getBody();
+          expect(body.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(body.title).to.equal("本教大意");
+          expect(body.type).to.equal(null);
+          expect(body.year).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  ## Source作成APIを確認する
+
+  1. ルートで `pnpm run dev:server` を実行する。
+  2. このリクエストをSendで送信する。
+  3. 201とTestsの成功を確認する。送信ごとにSourceが1件保存される。
+
+  typeとyearを省略した場合も、201で両方nullとして返る。
+  titleを空白だけにした場合、yearを小数・文字列・integerの範囲外にした場合は400になる。
+  不正入力の確認では正常入力用のTestsは失敗する。確認後はBodyを元に戻す。
+
+  今回はtitle・type・yearだけを扱い、projectIdは指定しない。

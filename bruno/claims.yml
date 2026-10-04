@@ -1,0 +1,50 @@
+info:
+  name: Create Claim (201)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "projectId": "bf7b999a-6c43-455b-be79-2ceb05ccff89",
+        "title": "「家業を怠ることなかれ」は、神を敬うための日常的実践でもある",
+        "body": null,
+        "status": "active"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Claimを作成すると201を返す", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("指定したProjectに属するClaimを返す", function () {
+          const body = res.getBody();
+          expect(body.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(body.projectId).to.equal("bf7b999a-6c43-455b-be79-2ceb05ccff89");
+          expect(body.title).to.equal("「家業を怠ることなかれ」は、神を敬うための日常的実践でもある");
+          expect(body.body).to.equal(null);
+          expect(body.status).to.equal("active");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Sendで送信し、201とTestsの成功を確認する。送信ごとにClaimが1件保存される。
+  projectIdには現在の開発DBに存在するProjectのIDを設定している。
+  別のDBで使う場合はGET `/api/projects`でIDを取得し、BodyとTests内のprojectIdを更新する。
+  statusを省略してもactiveになり、bodyを省略してもnullになる。

@@ -1,0 +1,56 @@
+info:
+  name: projects
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3000/api/projects
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "『御教誡』に見る神理教の生活倫理",
+        "description": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Projectを作成すると201を返す", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+        test("作成したProjectの値とIDを返す", function () {
+          const body = res.getBody();
+          expect(body.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(body.title).to.equal("『御教誡』に見る神理教の生活倫理");
+          expect(body.description).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  ## POSTでProjectを作成する
+
+  1. リポジトリのルートで `pnpm run dev:server` を実行する。
+  2. Brunoでこのリクエストを開き、Sendで送信する。
+  3. ステータスが201で、Testsの2項目が成功することを確認する。
+  4. レスポンスのidを控え、GET `/api/projects` の一覧に同じidがあることを確認する。
+
+  送信するたびにDBへProjectが1件追加される。
+  `projects.yml` は現在GET `/` を向いているため、一覧の確認にはURLを `/api/projects` に変更する。
+
+  入力エラーを手動で確認する場合は、Bodyのtitleを空文字列や空白だけに変更して送信する。
+  期待するステータスは400。このリクエストのTestsは正常入力用なので、その場合は失敗する。
+  確認後はBodyを元に戻す。

@@ -1,0 +1,41 @@
+info:
+  name: Create Claim - invalid input (400)
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "projectId": "bf7b999a-6c43-455b-be79-2ceb05ccff89",
+        "title": "   ",
+        "body": null,
+        "status": "active"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("空白だけのtitleを400で拒否する", function () {
+          expect(res.getStatus()).to.equal(400);
+          expect(res.getBody()).to.equal("Invalid input");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  titleが空白だけなので、DBへの保存前に400で拒否される。
+  UUID形式でないprojectIdや、許可されていないstatusも400になる。
