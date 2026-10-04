@@ -5,6 +5,7 @@ import { claims } from '../db/schema/claims.js'
 import type { CreateClaimData } from '@kari-fusen/schemas'
 
 export async function insertClaim(input: CreateClaimData) {
+  // 外部キーエラーにする前にProjectを確認し、不在をRouteへ伝える。
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, input.projectId),
   })

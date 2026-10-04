@@ -3,8 +3,7 @@ import type { Pool } from 'pg';
 import * as tables from './schema/index.js';
 import * as relations from './relations.js';
 
-// The caller owns the pool and its lifecycle. Importing schemas never connects to a DB.
-// ja: プールとそのライフサイクルは呼び出し元が所有します。スキーマをインポートしてもDBには接続されません。
+// Poolの管理は呼び出し元に任せ、テーブルとrelationsをdb.queryで使えるよう登録する。
 export function createDb(pool: Pool) {
   return drizzle(pool, { schema: { ...tables, ...relations } });
 }

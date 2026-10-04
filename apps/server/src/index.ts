@@ -13,6 +13,7 @@ import { insertClaim } from './services/claims.js'
 import { insertEvidence } from './services/evidences.js'
 
 const app = new Hono()
+// Routeは入力の検証とHTTPレスポンス、ServiceはDB操作と参照先の確認を担当する。
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
@@ -96,6 +97,7 @@ app.post(
 )
 
 app.get('/health', (c) => {
+  // サーバーの応答確認用。DBへの接続確認は行わない。
   return c.json({ status: 'ok' })
 })
 

@@ -2,12 +2,12 @@ import { db } from '../pool.js'
 import { projects } from '../db/schema/projects.js'
 import type { CreateProjectData } from '@kari-fusen/schemas'
 
-// ServiceはDBから値を取得する。HTTPレスポンスはRoute側で作る。
+// DBから取得した値を返す。JSONレスポンスへの変換はRouteで行う。
 export async function listProjects() {
   return db.query.projects.findMany()
 }
 
-// ServiceはDBに値を保存する。HTTPレスポンスはRoute側で作る。
+// returning()で、DBが生成したIDや日時を含む作成結果を受け取る。
 export async function insertProject(
   title: CreateProjectData['title'],
   description: CreateProjectData['description'],

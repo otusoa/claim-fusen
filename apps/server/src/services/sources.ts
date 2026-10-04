@@ -2,7 +2,7 @@ import { db } from '../pool.js'
 import { sources } from '../db/schema/sources.js'
 import type { CreateSourceData } from '@kari-fusen/schemas'
 
-// ServiceはDBに値を保存する。HTTPレスポンスはRoute側で作る。
+// SourceはProjectに所属させず、複数のProjectから参照できるようにする。
 export async function insertSource(
   title: CreateSourceData['title'],
   type: CreateSourceData['type'],

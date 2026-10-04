@@ -7,6 +7,7 @@ import { evidences } from '../db/schema/evidences.js'
 import type { CreateEvidenceData } from '@kari-fusen/schemas'
 
 export async function insertEvidence(input: CreateEvidenceData) {
+  // ProjectとSourceのどちらがないかを区別してRouteへ伝える。
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, input.projectId),
   })
@@ -22,6 +23,7 @@ export async function insertEvidence(input: CreateEvidenceData) {
   }
 
   const [newEvidence] = await db
+    // 引用と要約を分けて保存し、引用の空白もそのまま保持する。
     .insert(evidences)
     .values(input)
     .returning()
