@@ -1,0 +1,55 @@
+info:
+  name: Create Evidence (201)
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:3000/api/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "projectId": "bf7b999a-6c43-455b-be79-2ceb05ccff89",
+        "sourceId": "0bac506e-eb8e-4b2f-9c00-5787deeb2b31",
+        "quote": "役仕勧業怠る時なく",
+        "summary": "家業・職務を怠らないことが、神を敬う具体的行為として示されている。",
+        "locator": "3頁",
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("ステータス201を返す", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("Evidenceの値とIDを返す", function () {
+          const body = res.getBody();
+          expect(body.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(body.projectId).to.equal("bf7b999a-6c43-455b-be79-2ceb05ccff89");
+          expect(body.sourceId).to.equal("0bac506e-eb8e-4b2f-9c00-5787deeb2b31");
+          expect(body.quote).to.equal("役仕勧業怠る時なく");
+          expect(body.summary).to.equal("家業・職務を怠らないことが、神を敬う具体的行為として示されている。");
+          expect(body.locator).to.equal("3頁");
+          expect(body.note).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  送信ごとにEvidenceが1件保存される。
+  projectIdとsourceIdは現在の開発DBの値。別のDBではBodyとTestsのIDを更新する。
+  quoteは引用、summaryは要約として別々に保存する。
+  quote・summary・locator・noteを省略した場合はnullになる。省略を試す場合はTestsも合わせて変更する。
+

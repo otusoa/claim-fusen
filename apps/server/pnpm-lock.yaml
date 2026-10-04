@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@kari-fusen/web>typescript': npm:typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2
+
 importers:
 
   .:
@@ -14,6 +17,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.9.1
         version: 0.9.1(hono@4.13.12)(zod@4.6.5)
+      '@kari-fusen/schemas':
+        specifier: workspace:*
+        version: link:../../shared/schemas
       dotenv:
         specifier: ^18.0.4
         version: 18.0.5

@@ -1,9 +1,9 @@
 import { index, pgTable, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { claims } from './claims.js';
 import { evidences } from './evidences.js';
+import { claimEvidenceTypes } from '@kari-fusen/schemas';
 
-export const claimEvidenceTypes = ['supports', 'challenges', 'contextualizes', 'corresponds'] as const;
-export type ClaimEvidenceType = (typeof claimEvidenceTypes)[number];
+export { claimEvidenceTypes, type ClaimEvidenceType } from '@kari-fusen/schemas';
 
 export const claimEvidences = pgTable('claim_evidences', {
   id: uuid('id').defaultRandom().primaryKey(),

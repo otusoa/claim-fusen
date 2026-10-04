@@ -5,12 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  typescript: npm:typescript-native-bridge@latest
+  '@kari-fusen/web>typescript': npm:typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2
 
 importers:
 
   .:
     dependencies:
+      '@kari-fusen/schemas':
+        specifier: workspace:*
+        version: link:../../shared/schemas
       vue:
         specifier: ^3.5.42
         version: 3.5.43(typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2)
@@ -58,7 +61,7 @@ importers:
         specifier: ~1.82.0
         version: 1.82.0
       typescript:
-        specifier: npm:typescript-native-bridge@latest
+        specifier: npm:typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2
         version: typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2
       vite:
         specifier: ^8.2.2

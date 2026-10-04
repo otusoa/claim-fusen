@@ -1,16 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { db } from '../pool.js'
 import { projects } from '../db/schema/projects.js'
-import { claims, type ClaimStatus } from '../db/schema/claims.js'
+import { claims } from '../db/schema/claims.js'
+import type { CreateClaimData } from '@kari-fusen/schemas'
 
-type CreateClaimInput = {
-  projectId: string
-  title: string
-  body?: string | null
-  status: ClaimStatus
-}
-
-export async function insertClaim(input: CreateClaimInput) {
+export async function insertClaim(input: CreateClaimData) {
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, input.projectId),
   })

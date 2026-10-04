@@ -1,8 +1,8 @@
 import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { projects } from './projects.js';
+import { claimStatuses } from '@kari-fusen/schemas';
 
-export const claimStatuses = ['draft', 'active', 'archived'] as const;
-export type ClaimStatus = (typeof claimStatuses)[number];
+export { claimStatuses, type ClaimStatus } from '@kari-fusen/schemas';
 
 export const claims = pgTable('claims', {
   id: uuid('id').defaultRandom().primaryKey(),

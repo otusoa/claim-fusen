@@ -4,17 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm --filter @kari-fusen/schemas build && vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build",
+    "build-only": "pnpm --filter @kari-fusen/schemas build && vite build",
+    "type-check": "pnpm --filter @kari-fusen/schemas build && vue-tsc --build",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@kari-fusen/schemas": "workspace:*",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"
   },

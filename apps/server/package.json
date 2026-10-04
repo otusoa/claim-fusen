@@ -2,15 +2,16 @@
   "name": "@kari-fusen/server",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file=../../.env src/index.ts",
-    "build": "tsc",
+    "dev": "pnpm --filter @kari-fusen/schemas build && tsx watch --env-file=../../.env src/index.ts",
+    "build": "pnpm --filter @kari-fusen/schemas build && tsc",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:check": "drizzle-kit check",
-    "db:migrate": "drizzle-kit migrate"
+    "typecheck": "pnpm --filter @kari-fusen/schemas build && tsc --noEmit",
+    "db:generate": "pnpm --filter @kari-fusen/schemas build && drizzle-kit generate",
+    "db:check": "pnpm --filter @kari-fusen/schemas build && drizzle-kit check",
+    "db:migrate": "pnpm --filter @kari-fusen/schemas build && drizzle-kit migrate"
   },
   "dependencies": {
+    "@kari-fusen/schemas": "workspace:*",
     "@hono/node-server": "^2.1.3",
     "@hono/zod-validator": "^0.9.1",
     "dotenv": "^18.0.4",

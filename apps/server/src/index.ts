@@ -1,31 +1,18 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import * as z from 'zod'
 import { zValidator } from '@hono/zod-validator'
-import { claimStatuses } from './db/schema/claims.js'
+import {
+  createProjectSchema,
+  createSourceSchema,
+  createClaimSchema,
+  createEvidenceSchema,
+} from '@kari-fusen/schemas'
 import { listProjects, insertProject } from './services/projects.js'
 import { insertSource } from './services/sources.js'
 import { insertClaim } from './services/claims.js'
+import { insertEvidence } from './services/evidences.js'
 
 const app = new Hono()
-
-const createProjectSchema = z.object({
-  title: z.string().trim().min(1, 'titleは必須です'),
-  description: z.string().nullish(),
-})
-
-const createSourceSchema = z.object({
-  title: z.string().trim().min(1, 'titleは必須です'),
-  type: z.string().nullish(),
-  year: z.number().int().min(-2147483648).max(2147483647).nullish(),
-})
-
-const createClaimSchema = z.object({
-  projectId: z.uuid(),
-  title: z.string().trim().min(1, 'titleは必須です'),
-  body: z.string().nullish(),
-  status: z.enum(claimStatuses).default('active'),
-})
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
@@ -83,6 +70,28 @@ app.post(
     }
 
     return c.json(newClaim, 201)
+  },
+)
+
+app.post(
+  '/api/evidences',
+  zValidator('json', createEvidenceSchema, (result, c) => {
+    if (!result.success) {
+      return c.text('Invalid input', 400)
+    }
+  }),
+  async (c) => {
+    const body = c.req.valid('json')
+    const result = await insertEvidence(body)
+
+    if ('error' in result) {
+      if (result.error === 'project_not_found') {
+        return c.text('Project not found', 404)
+      }
+      return c.text('Source not found', 404)
+    }
+
+    return c.json(result.evidence, 201)
   },
 )
 

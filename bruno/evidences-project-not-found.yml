@@ -1,0 +1,43 @@
+info:
+  name: Create Evidence - Project not found (404)
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: http://localhost:3000/api/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "projectId": "d711468b-127f-486d-9a8b-bd7dd21e8db2",
+        "sourceId": "0bac506e-eb8e-4b2f-9c00-5787deeb2b31"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("ステータス404を返す", function () {
+          expect(res.getStatus()).to.equal(404);
+        });
+        test("固定のエラーメッセージを返す", function () {
+          expect(res.getBody()).to.equal("Project not found");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Sendで送信し、期待するステータスとTestsの成功を確認する。
+  404の確認には、形式が正しくDBに存在しないUUIDを使う。
+  Source不在の確認には、存在するProjectのIDを使う。
+
