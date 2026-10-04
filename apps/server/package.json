@@ -2,21 +2,20 @@
   "name": "@kari-fusen/server",
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @kari-fusen/schemas build && tsx watch --env-file=../../.env src/index.ts",
-    "build": "pnpm --filter @kari-fusen/schemas build && tsc",
-    "start": "node dist/index.js",
+    "dev": "pnpm --filter @kari-fusen/schemas build && nitro dev --port 3000",
+    "build": "pnpm --filter @kari-fusen/schemas build && nitro build",
+    "start": "node --env-file=../../.env .output/server/index.mjs",
     "typecheck": "pnpm --filter @kari-fusen/schemas build && tsc --noEmit",
+    "test": "pnpm --filter @kari-fusen/schemas build && vitest run",
     "db:generate": "pnpm --filter @kari-fusen/schemas build && drizzle-kit generate",
     "db:check": "pnpm --filter @kari-fusen/schemas build && drizzle-kit check",
     "db:migrate": "pnpm --filter @kari-fusen/schemas build && drizzle-kit migrate"
   },
   "dependencies": {
     "@kari-fusen/schemas": "workspace:*",
-    "@hono/node-server": "^2.1.3",
-    "@hono/zod-validator": "^0.9.1",
     "dotenv": "^18.0.4",
     "drizzle-orm": "^0.45.3",
-    "hono": "^4.13.12",
+    "nitro": "3.0.260903-beta",
     "pg": "^8.23.0",
     "zod": "^4.6.5"
   },
@@ -24,7 +23,7 @@
     "@types/node": "^26.1.1",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.11",
-    "tsx": "^4.23.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.11"
   }
 }
