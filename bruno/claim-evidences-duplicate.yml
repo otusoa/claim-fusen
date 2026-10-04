@@ -1,0 +1,43 @@
+info:
+  name: Link Evidence - duplicate (409)
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "evidenceId": "6e9a1287-3836-473d-8e43-6d58dcf0d279",
+        "type": "supports",
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("ステータス409を返す", function () {
+          expect(res.getStatus()).to.equal(409);
+        });
+        test("固定のエラーメッセージを返す", function () {
+          expect(res.getBody()).to.equal("Relation already exists");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  先にclaim-evidences.ymlを送信して関係を作成する。
+  同じClaim・Evidence・typeの関係を再送し、409を確認する。
+  既存の関係は上書きされない。

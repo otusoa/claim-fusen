@@ -1,0 +1,50 @@
+info:
+  name: Link Evidence to Claim (201)
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "evidenceId": "6e9a1287-3836-473d-8e43-6d58dcf0d279",
+        "type": "supports",
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("ステータス201を返す", function () {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("関係の値とIDを返す", function () {
+          const body = res.getBody();
+          expect(body.id).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(body.claimId).to.equal("e176856c-1673-4ec2-b22a-b01f14717c4e");
+          expect(body.evidenceId).to.equal("6e9a1287-3836-473d-8e43-6d58dcf0d279");
+          expect(body.type).to.equal("supports");
+          expect(body.note).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  同じProjectに所属するClaimとEvidenceをsupportsで結びつける。
+  最初の送信は201、同じ入力を再送すると409になる。
+  繰り返し201を確認するには、新しいClaimまたはEvidenceを作成してIDを更新する。
+  別のDBで使う場合はURL・Body・TestsのIDを更新する。
+  このリクエストを送信後、duplicateリクエストで409を確認する。

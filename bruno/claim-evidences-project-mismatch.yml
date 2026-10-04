@@ -1,0 +1,43 @@
+info:
+  name: Link Evidence - Project mismatch (400)
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: http://localhost:3000/api/claims/dad2f364-a872-494c-bbfc-e2aa68c7e39d/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "evidenceId": "6e9a1287-3836-473d-8e43-6d58dcf0d279",
+        "type": "supports",
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("ステータス400を返す", function () {
+          expect(res.getStatus()).to.equal(400);
+        });
+        test("固定のエラーメッセージを返す", function () {
+          expect(res.getBody()).to.equal("Claim and Evidence must belong to the same Project");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  現在の開発DBのIDを使った入力エラー／参照先チェック。
+  別のDBでは、正常な参照先は存在するID、不在の参照先は存在しないUUIDへ更新する。
+  Project不一致の確認では、ClaimとEvidenceを別々のProjectに所属させる。

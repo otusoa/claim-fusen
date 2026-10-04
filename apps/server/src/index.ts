@@ -6,11 +6,14 @@ import {
   createSourceSchema,
   createClaimSchema,
   createEvidenceSchema,
+  createClaimEvidenceSchema,
+  claimEvidenceParamsSchema,
 } from '@kari-fusen/schemas'
 import { listProjects, insertProject } from './services/projects.js'
 import { insertSource } from './services/sources.js'
 import { insertClaim } from './services/claims.js'
 import { insertEvidence } from './services/evidences.js'
+import { insertClaimEvidence } from './services/claim-evidences.js'
 
 const app = new Hono()
 // Routeは入力の検証とHTTPレスポンス、ServiceはDB操作と参照先の確認を担当する。
@@ -93,6 +96,42 @@ app.post(
     }
 
     return c.json(result.evidence, 201)
+  },
+)
+
+app.post(
+  '/api/claims/:claimId/evidences',
+  // URLのclaimIdとJSONの入力を、それぞれ共有スキーマで検証する。
+  zValidator('param', claimEvidenceParamsSchema, (result, c) => {
+    if (!result.success) {
+      return c.text('Invalid input', 400)
+    }
+  }),
+  zValidator('json', createClaimEvidenceSchema, (result, c) => {
+    if (!result.success) {
+      return c.text('Invalid input', 400)
+    }
+  }),
+  async (c) => {
+    const { claimId } = c.req.valid('param')
+    const body = c.req.valid('json')
+    const result = await insertClaimEvidence(claimId, body)
+
+    // Serviceの結果を、APIのステータスと固定メッセージへ変換する。
+    if ('error' in result) {
+      switch (result.error) {
+        case 'claim_not_found':
+          return c.text('Claim not found', 404)
+        case 'evidence_not_found':
+          return c.text('Evidence not found', 404)
+        case 'project_mismatch':
+          return c.text('Claim and Evidence must belong to the same Project', 400)
+        case 'relation_already_exists':
+          return c.text('Relation already exists', 409)
+      }
+    }
+
+    return c.json(result.relation, 201)
   },
 )
 
