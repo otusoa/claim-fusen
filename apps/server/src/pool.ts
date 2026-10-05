@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { createDb } from './db/index.js'
+import { createDb } from '~/db/index.js'
 
 const databaseUrl = process.env.DATABASE_URL
 if (!databaseUrl) {

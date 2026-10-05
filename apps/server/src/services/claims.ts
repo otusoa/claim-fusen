@@ -4,6 +4,25 @@ import { projects } from '../db/schema/projects.js'
 import { claims } from '../db/schema/claims.js'
 import type { CreateClaimData } from '@kari-fusen/schemas'
 
+export async function findClaimById(claimId: string) {
+  // ClaimからRelationのtype・note、Evidence、Sourceまでまとめて取得する。
+  const claim = await db.query.claims.findFirst({
+    where: eq(claims.id, claimId),
+    with: {
+      claimEvidences: {
+        with: {
+          evidence: {
+            with: { source: true },
+          },
+        },
+      },
+    },
+  })
+
+  // 不在をHTTPエラーへ変換するのはRouteの役割。
+  return claim ?? null
+}
+
 export async function insertClaim(input: CreateClaimData) {
   // 外部キーエラーにする前にProjectを確認し、不在をRouteへ伝える。
   const project = await db.query.projects.findFirst({

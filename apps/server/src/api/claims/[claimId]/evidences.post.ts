@@ -1,8 +1,8 @@
 import { defineHandler, HTTPError } from 'nitro'
 import { getRouterParams } from 'nitro/h3'
 import { claimEvidenceParamsSchema, createClaimEvidenceSchema } from '@kari-fusen/schemas'
-import { insertClaimEvidence } from '../../../services/claim-evidences.js'
-import { parseInput, readJsonBody } from '../../../utils/validation.js'
+import { insertClaimEvidence } from '~/services/claim-evidences.js'
+import { parseInput, readJsonBody } from '~/utils/validation.js'
 
 export default defineHandler(async (event) => {
   const { claimId } = parseInput(claimEvidenceParamsSchema, getRouterParams(event))

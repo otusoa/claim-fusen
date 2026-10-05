@@ -60,6 +60,7 @@ import { insertClaim } from '~/services/claims'
 | `POST /api/projects` | 201、作成したProject |
 | `POST /api/sources` | 201、作成したSource |
 | `POST /api/claims` | 201、作成したClaim |
+| `GET /api/claims/:claimId` | 200、Claimの詳細と関連するEvidence / Source |
 | `POST /api/evidences` | 201、作成したEvidence |
 | `POST /api/claims/:claimId/evidences` | 201、作成したClaimEvidence |
 
@@ -70,7 +71,32 @@ JSONを送るときは `Content-Type: application/json` を指定します。
 これらのエラーは従来の固定テキストを返します。予期しない内部エラーは500で
 `{"error":"Internal Server Error"}` を返し、開発時もSQL・接続情報・stackをレスポンスへ出しません。
 
-資料にある `GET /api/claims/:claimId` の詳細取得はまだ未実装です。今回の移行は既存APIを対象にしています。
+## Claim詳細の取得
+
+`GET /api/claims/:claimId` は次の構造を返します。
+
+```text
+Claim（id、projectId、title、body、status、createdAt、updatedAt）
+└─ claimEvidences[]
+   ├─ id、claimId、evidenceId、type、note、createdAt
+   └─ evidence
+      ├─ id、projectId、sourceId、quote、summary、locator、note、createdAt、updatedAt
+      └─ source（id、title、type、year、url、metadata、createdAt、updatedAt）
+```
+
+関連がなくてもClaim自体は返り、`claimEvidences` は空配列になります。
+不正なclaimIdは400 `Invalid input`、存在しないClaimは404 `Claim not found` です。
+一覧取得や検索ではなく、指定した1件だけを取得します。
+
+Project → Source → Claim → Evidence → ClaimEvidenceを作成した後、作成結果のclaimIdを使って確認します。
+
+```powershell
+$claimId = '作成したClaimのUUID'
+Invoke-RestMethod -Uri "http://localhost:3000/api/claims/$claimId" | ConvertTo-Json -Depth 10
+```
+
+`claimEvidences[].type` / `note`、`evidence.quote` / `summary` / `locator`、
+`evidence.source.title` を辿れることを確認します。Brunoの `claim-detail.yml` からも確認できます。
 
 ## 開発と確認
 

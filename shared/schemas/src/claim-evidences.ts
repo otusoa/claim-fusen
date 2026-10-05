@@ -1,4 +1,5 @@
 import * as z from 'zod'
+import { claimParamsSchema } from './claims.js'
 
 export const claimEvidenceTypes = [
   'supports',
@@ -15,9 +16,7 @@ export const createClaimEvidenceSchema = z.object({
   note: z.string().nullish(),
 })
 
-export const claimEvidenceParamsSchema = z.object({
-  claimId: z.uuid(),
-})
+export const claimEvidenceParamsSchema = claimParamsSchema
 
 export type CreateClaimEvidenceInput =
   z.input<typeof createClaimEvidenceSchema>

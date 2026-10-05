@@ -1,0 +1,49 @@
+info:
+  name: Get Claim detail (200)
+  type: http
+  seq: 18
+
+http:
+  method: GET
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Claim詳細を200で返す", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().id).to.equal("e176856c-1673-4ec2-b22a-b01f14717c4e");
+        });
+        test("RelationからEvidenceとSourceまで辿れる", function () {
+          const body = res.getBody();
+          expect(body.claimEvidences).to.be.an("array");
+          expect(body.claimEvidences.length).to.be.greaterThan(0);
+          body.claimEvidences.forEach(function (relation) {
+            expect(relation.claimId).to.equal(body.id);
+            expect(relation.type).to.be.oneOf(["supports", "challenges", "contextualizes", "corresponds"]);
+            expect(relation).to.have.property("note");
+            expect(relation.evidence.id).to.equal(relation.evidenceId);
+            expect(relation.evidence).to.have.property("quote");
+            expect(relation.evidence).to.have.property("summary");
+            expect(relation.evidence).to.have.property("locator");
+            expect(relation.evidence.source.id).to.equal(relation.evidence.sourceId);
+            expect(relation.evidence.source.title).to.be.a("string");
+          });
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  ClaimとEvidenceを作成し、claim-evidences.ymlで関係を登録してから送信する。
+  URLにはclaim-evidences.ymlと同じClaim IDを指定している。
+  別のDBで使う場合はURLとTests内のClaim IDを作成結果のIDへ更新する。
+  関係のtype・note、Evidenceのquote・summary・locator、Sourceのtitleを確認する。
+  関係がないClaimでも200になり、claimEvidencesは空配列になる。
+  このリクエストのTestsは関係を登録済みのClaimを前提にしている。

@@ -1,5 +1,5 @@
 import { definePlugin } from 'nitro'
-import { pool } from '../pool.js'
+import { pool } from '~/pool.js'
 
 export default definePlugin((nitroApp) => {
   // 再読み込みや終了時に、このサーバーが作った接続を解放する。

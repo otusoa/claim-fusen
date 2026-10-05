@@ -6,6 +6,7 @@ import getProjects from '../src/api/projects.get.js'
 import postProject from '../src/api/projects.post.js'
 import postSource from '../src/api/sources.post.js'
 import postClaim from '../src/api/claims.post.js'
+import getClaim from '~/api/claims/[claimId].get'
 import postEvidence from '../src/api/evidences.post.js'
 import postClaimEvidence from '../src/api/claims/[claimId]/evidences.post.js'
 
@@ -14,6 +15,7 @@ const services = vi.hoisted(() => ({
   insertProject: vi.fn(),
   insertSource: vi.fn(),
   insertClaim: vi.fn(),
+  findClaimById: vi.fn(),
   insertEvidence: vi.fn(),
   insertClaimEvidence: vi.fn(),
 }))
@@ -23,7 +25,10 @@ vi.mock('../src/services/projects.js', () => ({
   insertProject: services.insertProject,
 }))
 vi.mock('../src/services/sources.js', () => ({ insertSource: services.insertSource }))
-vi.mock('../src/services/claims.js', () => ({ insertClaim: services.insertClaim }))
+vi.mock('../src/services/claims.js', () => ({
+  insertClaim: services.insertClaim,
+  findClaimById: services.findClaimById,
+}))
 vi.mock('../src/services/evidences.js', () => ({ insertEvidence: services.insertEvidence }))
 vi.mock('../src/services/claim-evidences.js', () => ({ insertClaimEvidence: services.insertClaimEvidence }))
 
@@ -41,6 +46,7 @@ const app = new H3({
   .post('/api/projects', postProject)
   .post('/api/sources', postSource)
   .post('/api/claims', postClaim)
+  .get('/api/claims/:claimId', getClaim)
   .post('/api/evidences', postEvidence)
   .post('/api/claims/:claimId/evidences', postClaimEvidence)
 
@@ -93,6 +99,52 @@ describe('Nitro HTTP API contract', () => {
     expect(response.status).toBe(201)
     expect(await response.json()).toMatchObject({ id: claimId, status: 'active' })
     expect(services.insertClaim).toHaveBeenCalledWith({ projectId, title: '主張', status: 'active' })
+  })
+
+  it('returns claim details with the relation, evidence and source', async () => {
+    const claim = {
+      id: claimId, projectId, title: '主張', body: null, status: 'active',
+      claimEvidences: [{
+        id: 'relation-id', claimId, evidenceId, type: 'supports', note: '関係の補足',
+        evidence: {
+          id: evidenceId, projectId, sourceId, quote: '  引用  ', summary: '要約', locator: '3頁', note: null,
+          source: { id: sourceId, title: '本教大意', type: null, year: null },
+        },
+      }],
+    }
+    services.findClaimById.mockResolvedValue(claim)
+    const response = await app.fetch(new Request(`http://localhost/api/claims/${claimId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual(claim)
+    expect(services.findClaimById).toHaveBeenCalledWith(claimId)
+  })
+
+  it('returns an empty relation array for a claim without evidence', async () => {
+    services.findClaimById.mockResolvedValue({ id: claimId, title: '未検証の主張', claimEvidences: [] })
+    const response = await app.fetch(new Request(`http://localhost/api/claims/${claimId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ id: claimId, claimEvidences: [] })
+  })
+
+  it('reports a missing claim when getting details', async () => {
+    services.findClaimById.mockResolvedValue(null)
+    const response = await app.fetch(new Request(`http://localhost/api/claims/${claimId}`))
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('Claim not found')
+  })
+
+  it('rejects an invalid claim UUID before fetching details', async () => {
+    const response = await app.fetch(new Request('http://localhost/api/claims/not-a-uuid'))
+    expect(response.status).toBe(400)
+    expect(await response.text()).toBe('Invalid input')
+    expect(services.findClaimById).not.toHaveBeenCalled()
+  })
+
+  it('hides unexpected errors when getting claim details', async () => {
+    services.findClaimById.mockRejectedValue(new Error('secret SQL and database connection string'))
+    const response = await app.fetch(new Request(`http://localhost/api/claims/${claimId}`))
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ error: 'Internal Server Error' })
   })
 
   it('keeps the evidence quote separate from the summary without trimming it', async () => {

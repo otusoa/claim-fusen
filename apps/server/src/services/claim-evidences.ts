@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
 import type { CreateClaimEvidenceData } from '@kari-fusen/schemas'
-import { db } from '../pool.js'
-import { claims } from '../db/schema/claims.js'
-import { evidences } from '../db/schema/evidences.js'
+import { db } from '~/pool.js'
+import { claims } from '~/db/schema/claims.js'
+import { evidences } from '~/db/schema/evidences.js'
 import { claimEvidences } from '../db/schema/claim-evidences.js'
 
 export async function insertClaimEvidence(

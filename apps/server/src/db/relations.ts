@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { claimEvidences, claims, evidences, projects, sources } from './schema/index.js';
+import { claimEvidences, claims, evidences, projects, sources } from '~/db/schema/index';
 
 export const projectsRelations = relations(projects, ({ many }) => ({
   // withで辿る関連を定義する。DBの外部キー制約はschema側で定義する。
