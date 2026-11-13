@@ -7,6 +7,7 @@ import postProject from '../src/api/projects.post.js'
 import postSource from '../src/api/sources.post.js'
 import postClaim from '../src/api/claims.post.js'
 import getClaim from '~/api/claims/[claimId].get'
+import getClaims from '~/api/claims.get'
 import postEvidence from '../src/api/evidences.post.js'
 import postClaimEvidence from '../src/api/claims/[claimId]/evidences.post.js'
 
@@ -16,6 +17,7 @@ const services = vi.hoisted(() => ({
   insertSource: vi.fn(),
   insertClaim: vi.fn(),
   findClaimById: vi.fn(),
+  listClaimsByProject: vi.fn(),
   insertEvidence: vi.fn(),
   insertClaimEvidence: vi.fn(),
 }))
@@ -28,6 +30,7 @@ vi.mock('../src/services/sources.js', () => ({ insertSource: services.insertSour
 vi.mock('../src/services/claims.js', () => ({
   insertClaim: services.insertClaim,
   findClaimById: services.findClaimById,
+  listClaimsByProject: services.listClaimsByProject,
 }))
 vi.mock('../src/services/evidences.js', () => ({ insertEvidence: services.insertEvidence }))
 vi.mock('../src/services/claim-evidences.js', () => ({ insertClaimEvidence: services.insertClaimEvidence }))
@@ -46,6 +49,7 @@ const app = new H3({
   .post('/api/projects', postProject)
   .post('/api/sources', postSource)
   .post('/api/claims', postClaim)
+  .get('/api/claims', getClaims)
   .get('/api/claims/:claimId', getClaim)
   .post('/api/evidences', postEvidence)
   .post('/api/claims/:claimId/evidences', postClaimEvidence)
@@ -117,6 +121,51 @@ describe('Nitro HTTP API contract', () => {
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual(claim)
     expect(services.findClaimById).toHaveBeenCalledWith(claimId)
+  })
+
+  it('gets the Claim list for the requested Project', async () => {
+    services.listClaimsByProject.mockResolvedValue([
+      { id: claimId, projectId, title: '主張', status: 'active', updatedAt: new Date('2026-11-05T00:00:00Z') },
+    ])
+    const response = await app.fetch(new Request(`http://localhost/api/claims?projectId=${projectId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual([
+      { id: claimId, projectId, title: '主張', status: 'active', updatedAt: '2026-11-05T00:00:00.000Z' },
+    ])
+    expect(services.listClaimsByProject).toHaveBeenCalledExactlyOnceWith(projectId)
+  })
+
+  it('returns an empty list for an existing Project without Claims', async () => {
+    services.listClaimsByProject.mockResolvedValue([])
+    const response = await app.fetch(new Request(`http://localhost/api/claims?projectId=${projectId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual([])
+  })
+
+  it('reports a missing Project when getting the Claim list', async () => {
+    services.listClaimsByProject.mockResolvedValue(null)
+    const response = await app.fetch(new Request(`http://localhost/api/claims?projectId=${projectId}`))
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('Project not found')
+  })
+
+  it.each([
+    '',
+    '?projectId=',
+    '?projectId=not-a-uuid',
+    `?projectId=${projectId}&projectId=${sourceId}`,
+  ])('rejects invalid Claim list query: %s', async (query) => {
+    const response = await app.fetch(new Request(`http://localhost/api/claims${query}`))
+    expect(response.status).toBe(400)
+    expect(await response.text()).toBe('Invalid input')
+    expect(services.listClaimsByProject).not.toHaveBeenCalled()
+  })
+
+  it('hides internal errors when getting the Claim list', async () => {
+    services.listClaimsByProject.mockRejectedValue(new Error('secret SQL and connection string'))
+    const response = await app.fetch(new Request(`http://localhost/api/claims?projectId=${projectId}`))
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ error: 'Internal Server Error' })
   })
 
   it('returns an empty relation array for a claim without evidence', async () => {

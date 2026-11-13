@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @kari-fusen/schemas build && vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "run-s build-only type-check",
     "preview": "vite preview",
     "build-only": "pnpm --filter @kari-fusen/schemas build && vite build",
     "type-check": "pnpm --filter @kari-fusen/schemas build && vue-tsc --build",
@@ -16,10 +16,13 @@
   },
   "dependencies": {
     "@kari-fusen/schemas": "workspace:*",
+    "@nuxt/ui": "4.12.0",
+    "tailwindcss": "^4.3.4",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.150",
     "@tsconfig/node24": "^24.0.5",
     "@types/node": "^24.13.4",
     "@vitejs/plugin-vue": "^6.0.8",

@@ -60,6 +60,7 @@ import { insertClaim } from '~/services/claims'
 | `POST /api/projects` | 201、作成したProject |
 | `POST /api/sources` | 201、作成したSource |
 | `POST /api/claims` | 201、作成したClaim |
+| `GET /api/claims?projectId=<UUID>` | 200、指定ProjectのClaim配列 |
 | `GET /api/claims/:claimId` | 200、Claimの詳細と関連するEvidence / Source |
 | `POST /api/evidences` | 201、作成したEvidence |
 | `POST /api/claims/:claimId/evidences` | 201、作成したClaimEvidence |
@@ -70,6 +71,22 @@ JSONを送るときは `Content-Type: application/json` を指定します。
 入力不正・不正JSONは400、参照先不在は404、異なるProject同士のRelationは400、Relation重複は409です。
 これらのエラーは従来の固定テキストを返します。予期しない内部エラーは500で
 `{"error":"Internal Server Error"}` を返し、開発時もSQL・接続情報・stackをレスポンスへ出しません。
+
+## Projectに属するClaimの一覧
+
+`GET /api/claims?projectId=<UUID>` は指定ProjectのClaimだけを返します。
+`projectId` は必須です。省略・空文字・不正UUID・複数指定は400 `Invalid input`、
+Projectが存在しない場合は404 `Project not found` になります。
+存在するProjectにClaimがなければ200で `[]` を返します。
+並び順はupdatedAtの降順で、同じ日時の場合はidの昇順です。
+
+```powershell
+$projectId = '取得対象のProjectのUUID'
+Invoke-RestMethod -Uri "http://localhost:3000/api/claims?projectId=$projectId"
+```
+
+Serviceの `listClaimsByProject()` がDBで絞り込み、Routeでqueryの検証とHTTP応答を扱います。
+Brunoの `claims-list.yml` では、返された各ClaimのprojectIdが指定したIDと一致することを確認します。
 
 ## Claim詳細の取得
 

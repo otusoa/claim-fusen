@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev:server": "pnpm --filter @kari-fusen/server dev",
+    "dev:web": "pnpm --filter @kari-fusen/web dev",
+    "build:web": "pnpm --filter @kari-fusen/web build",
     "build:server": "pnpm --filter @kari-fusen/server build",
     "start:server": "pnpm --filter @kari-fusen/server start",
     "test:server": "pnpm --filter @kari-fusen/server test",
@@ -19,10 +21,10 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.8.1",
+      "version": "12.16.1",
       "onFail": "download"
     }
   },
-  "packageManager": "pnpm@12.8.1",
+  "packageManager": "pnpm@12.16.1",
   "type": "module"
 }

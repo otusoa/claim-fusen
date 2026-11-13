@@ -1,0 +1,35 @@
+info:
+  name: List Claims by Project (200)
+  type: http
+  seq: 21
+
+http:
+  method: GET
+  url: http://localhost:3000/api/claims?projectId=bf7b999a-6c43-455b-be79-2ceb05ccff89
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("指定したProjectのClaimだけを返す", function () {
+          expect(res.getStatus()).to.equal(200);
+          const claims = res.getBody();
+          expect(claims).to.be.an("array");
+          claims.forEach(function (claim) {
+            expect(claim.projectId).to.equal("bf7b999a-6c43-455b-be79-2ceb05ccff89");
+            expect(claim.title).to.be.a("string");
+          });
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  GET /api/projectsから存在するProjectのIDを取得し、URLとTests内のIDを揃える。
+  別ProjectのClaimが混ざらないことを確認する。
+  ClaimのないProjectも200になり、空配列を返す。更新日の降順で返す。

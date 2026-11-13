@@ -1,0 +1,29 @@
+info:
+  name: List Claims - Project not found (404)
+  type: http
+  seq: 23
+
+http:
+  method: GET
+  url: http://localhost:3000/api/claims?projectId=d711468b-127f-486d-9a8b-bd7dd21e8db2
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("存在しないProjectでは404を返す", function () {
+          expect(res.getStatus()).to.equal(404);
+          expect(res.getBody()).to.equal("Project not found");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  GET /api/projectsの一覧に存在しないProjectのUUIDを指定する。
+  空のProject（200、空配列）と、Project自体の不在（404）を区別する。

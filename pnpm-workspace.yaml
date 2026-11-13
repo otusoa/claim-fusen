@@ -10,3 +10,4 @@ overrides:
 
 allowBuilds:
   esbuild: true
+  vue-demi: true

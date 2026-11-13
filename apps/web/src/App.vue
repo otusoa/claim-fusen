@@ -1,13 +1,25 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import { ja } from '@nuxt/ui/locale'
 </script>
 
 <template>
-  <header>
-    a
-  </header>
-
-  <RouterView />
+  <UApp :locale="ja">
+    <div class="min-h-dvh bg-default text-default">
+      <header class="border-b border-default">
+        <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-5 sm:px-6">
+          <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <UIcon name="i-lucide-notebook-pen" class="size-5" />
+          </span>
+          <RouterLink to="/projects" class="text-lg font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+            claim-fusen
+          </RouterLink>
+          <span class="ml-auto hidden text-sm text-muted sm:block">主張・根拠・問いをつなぐ研究ノート</span>
+        </div>
+      </header>
+      <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+        <RouterView />
+      </main>
+    </div>
+  </UApp>
 </template>
-
-<style scoped></style>

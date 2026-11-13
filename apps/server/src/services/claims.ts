@@ -1,8 +1,22 @@
-import { eq } from 'drizzle-orm'
+import { asc, desc, eq } from 'drizzle-orm'
 import { db } from '../pool.js'
 import { projects } from '../db/schema/projects.js'
 import { claims } from '../db/schema/claims.js'
 import type { CreateClaimData } from '@kari-fusen/schemas'
+
+export async function listClaimsByProject(projectId: string) {
+  const project = await db.query.projects.findFirst({
+    columns: { id: true },
+    where: eq(projects.id, projectId),
+  })
+  if (!project) return null
+
+  // 絞り込みをDB側で行い、別ProjectのClaimを返さない。
+  return db.query.claims.findMany({
+    where: eq(claims.projectId, projectId),
+    orderBy: [desc(claims.updatedAt), asc(claims.id)],
+  })
+}
 
 export async function findClaimById(claimId: string) {
   // ClaimからRelationのtype・note、Evidence、Sourceまでまとめて取得する。
