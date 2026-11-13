@@ -1,10 +1,20 @@
-import { eq } from 'drizzle-orm'
+import { asc, desc, eq } from 'drizzle-orm'
 import { db } from '../pool.js'
 import { projects } from '../db/schema/projects.js'
 import { sources } from '../db/schema/sources.js'
 import { evidences } from '../db/schema/evidences.js'
 
 import type { CreateEvidenceData } from '@kari-fusen/schemas'
+
+export async function listEvidencesByProject(projectId: string) {
+  const project = await db.query.projects.findFirst({ columns: { id: true }, where: eq(projects.id, projectId) })
+  if (!project) return null
+  return db.query.evidences.findMany({
+    where: eq(evidences.projectId, projectId),
+    with: { source: true },
+    orderBy: [desc(evidences.updatedAt), asc(evidences.id)],
+  })
+}
 
 export async function insertEvidence(input: CreateEvidenceData) {
   // ProjectとSourceのどちらがないかを区別してRouteへ伝える。

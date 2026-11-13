@@ -14,7 +14,10 @@ import { ja } from '@nuxt/ui/locale'
           <RouterLink to="/projects" class="text-lg font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
             claim-fusen
           </RouterLink>
-          <span class="ml-auto hidden text-sm text-muted sm:block">主張・根拠・問いをつなぐ研究ノート</span>
+          <nav aria-label="メインナビゲーション" class="ml-auto flex flex-wrap gap-2">
+            <UButton to="/projects" label="Project" color="neutral" variant="ghost" />
+            <UButton to="/sources" label="Source" color="neutral" variant="ghost" />
+          </nav>
         </div>
       </header>
       <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">

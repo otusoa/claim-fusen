@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { ClaimsRequestError, listClaims, type Claim } from '@/api/claims'
 import { listProjects, type Project } from '@/api/projects'
 import type { ClaimStatus } from '@kari-fusen/schemas'
+import ProjectNav from '@/components/ProjectNav.vue'
 
 const props = defineProps<{ projectId: string }>()
 const project = ref<Project | null>(null)
@@ -52,6 +53,7 @@ watch([() => props.projectId, reloadKey], async ([projectId], _, onCleanup) => {
 <template>
   <section aria-labelledby="claims-heading" :aria-busy="loading">
     <UButton to="/projects" label="Project一覧へ戻る" color="neutral" variant="link" class="mb-6 px-0" />
+    <ProjectNav v-if="project" :project-id="project.id" />
 
     <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
       <div class="min-w-0">
@@ -59,8 +61,10 @@ watch([() => props.projectId, reloadKey], async ([projectId], _, onCleanup) => {
         <h1 id="claims-heading" class="text-3xl font-semibold tracking-tight">Claim一覧</h1>
         <p class="mt-3 text-sm leading-7 text-muted">このプロジェクトの主張・仮説・解釈を確認します。</p>
       </div>
-      <UButton label="再読み込み" icon="i-lucide-refresh-cw" color="neutral" variant="outline" :loading="loading"
-        @click="reloadKey++" />
+      <div class="flex flex-wrap gap-3">
+        <UButton v-if="project" :to="{ name: 'claim-create', params: { projectId: project.id } }" label="Claimを作成" />
+        <UButton label="再読み込み" icon="i-lucide-refresh-cw" color="neutral" variant="outline" :loading="loading" @click="reloadKey++" />
+      </div>
     </div>
 
     <div v-if="loading" role="status" aria-live="polite">
@@ -85,7 +89,9 @@ watch([() => props.projectId, reloadKey], async ([projectId], _, onCleanup) => {
     </UAlert>
 
     <UEmpty v-else-if="claims.length === 0" icon="i-lucide-notebook-pen" title="このProjectにはまだClaimがありません"
-      description="登録された主張・仮説・解釈がここに表示されます。" variant="subtle" />
+      description="登録された主張・仮説・解釈がここに表示されます。" variant="subtle">
+      <template #actions><UButton :to="{ name: 'claim-create', params: { projectId } }" label="Claimを作成" /></template>
+    </UEmpty>
 
     <div v-else>
       <p class="mb-4 text-sm text-muted" role="status">{{ claims.length }}件のClaim</p>

@@ -1,4 +1,8 @@
 import type { ClaimEvidenceType, ClaimStatus } from '@kari-fusen/schemas'
+import { createClaimSchema, type CreateClaimInput } from '@kari-fusen/schemas'
+import { postJson } from './http'
+import type { Source } from './sources'
+import type { EvidenceWithSource } from './evidences'
 
 export interface Claim {
   id: string
@@ -10,16 +14,7 @@ export interface Claim {
   updatedAt: string
 }
 
-export interface ClaimSource {
-  id: string
-  title: string
-  type: string | null
-  year: number | null
-  url: string | null
-  metadata: Record<string, unknown> | null
-  createdAt: string
-  updatedAt: string
-}
+export type ClaimSource = Source
 
 export interface ClaimEvidence {
   id: string
@@ -28,18 +23,7 @@ export interface ClaimEvidence {
   type: ClaimEvidenceType
   note: string | null
   createdAt: string
-  evidence: {
-    id: string
-    projectId: string
-    sourceId: string
-    quote: string | null
-    summary: string | null
-    locator: string | null
-    note: string | null
-    createdAt: string
-    updatedAt: string
-    source: ClaimSource
-  }
+  evidence: EvidenceWithSource
 }
 
 export interface ClaimDetail extends Claim {
@@ -69,4 +53,9 @@ export async function getClaim(claimId: string, signal?: AbortSignal): Promise<C
   })
   if (!response.ok) throw new ClaimsRequestError(response.status, 'Claim詳細を取得できませんでした')
   return response.json()
+}
+
+export function createClaim(input: CreateClaimInput): Promise<Claim> {
+  const data = createClaimSchema.parse(input)
+  return postJson('/api/claims', { ...data, body: data.body === '' ? null : data.body ?? null })
 }

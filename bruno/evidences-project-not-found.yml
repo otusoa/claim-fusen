@@ -14,7 +14,8 @@ http:
     data: |-
       {
         "projectId": "d711468b-127f-486d-9a8b-bd7dd21e8db2",
-        "sourceId": "0bac506e-eb8e-4b2f-9c00-5787deeb2b31"
+        "sourceId": "0bac506e-eb8e-4b2f-9c00-5787deeb2b31",
+        "quote": "不在確認用の引用"
       }
   auth: inherit
 

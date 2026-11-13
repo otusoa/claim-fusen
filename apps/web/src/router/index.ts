@@ -4,6 +4,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', redirect: '/projects' },
+    { path: '/sources', name: 'sources', component: () => import('@/views/SourcesView.vue') },
+    { path: '/sources/new', name: 'source-create', component: () => import('@/views/SourceCreateView.vue') },
+    { path: '/projects/:projectId/claims/new', name: 'claim-create', component: () => import('@/views/ClaimCreateView.vue'), props: true },
+    { path: '/projects/:projectId/evidences', name: 'project-evidences', component: () => import('@/views/EvidencesView.vue'), props: true },
+    { path: '/projects/:projectId/evidences/new', name: 'evidence-create', component: () => import('@/views/EvidenceCreateView.vue'), props: true },
     {
       path: '/projects',
       name: 'projects',

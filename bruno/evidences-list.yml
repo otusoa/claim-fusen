@@ -1,0 +1,26 @@
+info:
+  name: List Project Evidence (200)
+  type: http
+  seq: 25
+
+http:
+  method: GET
+  url: http://localhost:3000/api/evidences?projectId=bf7b999a-6c43-455b-be79-2ceb05ccff89
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("指定ProjectのEvidenceとSourceを返す", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody()).to.be.an("array");
+          res.getBody().forEach(function (evidence) {
+            expect(evidence.projectId).to.equal("bf7b999a-6c43-455b-be79-2ceb05ccff89");
+            expect(evidence.source.id).to.equal(evidence.sourceId);
+          });
+        });
+
+docs: |-
+  Project IDは使用中の開発DBに合わせてURLとTestsの両方を変更する。
+  並び順は更新日降順、同日時ならID昇順。Evidenceがない既存Projectは200と空配列。

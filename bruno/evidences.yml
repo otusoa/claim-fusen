@@ -51,5 +51,6 @@ docs: |-
   送信ごとにEvidenceが1件保存される。
   projectIdとsourceIdは現在の開発DBの値。別のDBではBodyとTestsのIDを更新する。
   quoteは引用、summaryは要約として別々に保存する。
-  quote・summary・locator・noteを省略した場合はnullになる。省略を試す場合はTestsも合わせて変更する。
+  quoteまたはsummaryのどちらかに空白以外の内容が必須。両方未入力なら400。
+  locator・noteなど任意項目の省略はnullになる。引用の空白と改行は保持する。
 

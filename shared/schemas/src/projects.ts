@@ -1,5 +1,7 @@
 import * as z from 'zod'
 
+export const projectParamsSchema = z.object({ projectId: z.uuid() })
+
 export const createProjectSchema = z.object({
   title: z.string().trim().min(1, 'titleは必須です'),
   description: z.string().nullish(),

@@ -59,10 +59,12 @@ import { insertClaim } from '~/services/claims'
 | `GET /api/projects` | 200、Project配列 |
 | `POST /api/projects` | 201、作成したProject |
 | `POST /api/sources` | 201、作成したSource |
+| `GET /api/sources` | 200、全Projectで共有するSource配列 |
 | `POST /api/claims` | 201、作成したClaim |
 | `GET /api/claims?projectId=<UUID>` | 200、指定ProjectのClaim配列 |
 | `GET /api/claims/:claimId` | 200、Claimの詳細と関連するEvidence / Source |
 | `POST /api/evidences` | 201、作成したEvidence |
+| `GET /api/evidences?projectId=<UUID>` | 200、指定ProjectのEvidence配列。各要素にSourceを含む |
 | `POST /api/claims/:claimId/evidences` | 201、作成したClaimEvidence |
 
 JSONを送るときは `Content-Type: application/json` を指定します。
@@ -71,6 +73,22 @@ JSONを送るときは `Content-Type: application/json` を指定します。
 入力不正・不正JSONは400、参照先不在は404、異なるProject同士のRelationは400、Relation重複は409です。
 これらのエラーは従来の固定テキストを返します。予期しない内部エラーは500で
 `{"error":"Internal Server Error"}` を返し、開発時もSQL・接続情報・stackをレスポンスへ出しません。
+
+## Source一覧・作成
+
+Source作成はtitle必須、type・year・urlは任意です。urlはHTTP／HTTPSの絶対URLのみ受け付けます。
+Source一覧はupdatedAt降順、同日時ならid昇順です。SourceはProjectをまたいで共有します。
+
+## Evidence一覧・作成
+
+`GET /api/evidences?projectId=<UUID>` は、そのProjectに属するEvidenceだけをDBで絞り込み、各要素に `source` を含めて返します。
+queryの省略・空文字・不正UUID・複数指定は400、Project不在は404、既存Projectの空一覧は200 `[]` です。
+並び順はupdatedAt降順、同日時ならid昇順です。
+
+`POST /api/evidences` は、空白以外の引用または要約が必要です。両方未入力・null・空白だけの場合は400になります。
+これは従来の「内容なしでも作成可能」からの入力条件の変更です。既存の空のEvidenceは変更しません。
+保存する引用・要約の空白・改行は保持します。Project／Source不在は従来どおり、それぞれ404の固定メッセージです。
+Brunoの不在確認リクエストにも有効な引用を設定し、入力検証後の404を確認できるようにしています。
 
 ## Projectに属するClaimの一覧
 

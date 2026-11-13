@@ -3,6 +3,10 @@
 serverとwebで使う入力チェック、許可値、入力型を定義します。
 DB接続や参照先の存在確認はserverのServiceに置きます。
 
+Sourceのurlは任意で、HTTP／HTTPSの絶対URLに限定します。
+Evidenceは引用または要約に空白以外の内容が必要です。両方空の新規作成は400になります。
+引用・要約の空白や改行は検証後も変更しません。既存レコードに対するmigrationは不要です。
+
 ```ts
 import { createClaimSchema, type CreateClaimInput, type CreateClaimData } from '@kari-fusen/schemas'
 

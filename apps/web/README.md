@@ -8,8 +8,13 @@ Backendは `apps/server` の独立したNitroサーバーです。
 - `/` → `/projects` へ移動
 - `/projects`：既存の `GET /api/projects` から取得したProjectのタイトル・説明・更新日を表示
 - `/projects/new`：タイトル（必須）と説明（任意）を入力してProjectを作成
+- `/sources`：全Projectで共有する出典の一覧
+- `/sources/new`：タイトル・種別・年・URLを入力して出典を作成
+- `/projects/:projectId/evidences`：Projectに所属するEvidenceと出典を一覧表示
+- `/projects/:projectId/evidences/new`：出典を選び、引用・要約・引用箇所・メモを入力してEvidenceを作成
 - `/projects/:projectId/claims`：Projectの「Claim一覧」から移動し、そのProjectに所属するClaimだけを表示
 - `/claims/:claimId`：Claim一覧の「詳細を見る」から移動し、本文・status・関係・Evidence・出典を表示
+- `/projects/:projectId/claims/new`：所属Projectを固定してClaimを作成。初期statusは進行中、作成後はClaim詳細へ移動
 - 読み込み中、データなし、取得失敗と再試行の表示
 - 未定義のURL：404画面からProject一覧へ戻る
 
@@ -25,6 +30,23 @@ Project一覧の上部と空状態の「Projectを作成」から作成画面を
 タイトルは前後の空白を除去し、未入力の説明はnullとして送ります。説明の改行は保持します。
 送信中は入力・作成・キャンセル操作を無効にします。作成に失敗しても入力内容を保持し、自動再送はしません。
 Project作成後に画面遷移だけ失敗した場合は、再登録せず作成したProjectへのリンクを表示します。
+
+## Source・Claim・Evidenceの登録
+
+ヘッダーからProject／Sourceへ移動でき、Project内ではClaim一覧／Evidence一覧を切り替えられます。
+各一覧の上部と空状態に作成ボタンを設置しています。
+
+- Sourceは全Projectで共有します。タイトル必須、種別・年・URLは任意。年の空欄を0へ変換せず、URLはHTTP／HTTPSの絶対URLだけを受け付けます。
+- ClaimはURLのProjectに所属します。タイトル・任意の本文・statusを入力し、初期statusは進行中。作成後はそのClaimの詳細へ移動します。
+- EvidenceもURLのProjectに所属し、Sourceと、引用または要約のどちらかが必須です。空白だけでは登録できませんが、保存時の引用・要約の空白・改行は保持します。
+- Source選択はタイトル・種別・年で検索できます。同名の出典は選択欄のIDで区別できます。
+- Evidence入力中に「Sourceを追加」を選ぶとモーダルを開きます。作成したSourceを自動選択し、Evidenceの入力を保持します。Source送信中はキャンセル・外側クリック・Escape・閉じる操作を無効にします。
+- モーダルで作成したSourceは、Evidenceをキャンセルしても共有出典として残ります。
+- Evidence作成後はProject内のEvidence一覧へ移動します。Source不在の404では引用などを保持して選択を解除し、出典一覧を再取得します。Project不在は別の状態として表示します。
+
+新しい一覧は全件取得です。サーバー検索・ページ分割と、ClaimからEvidenceを紐付ける操作は後続の作業です。
+新しいフォームは送信中・作成済みの再POST、画面離脱・Project切替後の古い通知や遷移を抑止します。
+GETは画面離脱・Project切替時に中断します。作成失敗時は入力を保持し、通信断時は再送前に一覧で作成済みか確認するよう案内します。
 
 ## 起動
 
@@ -83,6 +105,7 @@ pnpm run build:web
 pnpm --filter @kari-fusen/web exec eslint src vite.config.ts
 node --test apps/web/test/source-url.test.mjs
 node --test apps/web/test/projects-api.test.mjs apps/web/test/project-create.test.mjs
+node --test apps/web/test/features.test.mjs
 ```
 
 Backendを起動した状態で、一覧がAPIのProjectと一致することと、再読み込みが動くことを確認します。
@@ -96,6 +119,13 @@ Project作成は開発用DBまたはAPIレスポンスのモックで次を確�
 
 Project作成の自動テストはAPIの送信内容と、Vueの画面ロジック・メモリ上のルーターによる送信と遷移を検証します。
 通知とHTTP応答を差し替えるため、実DBへの登録やブラウザの見た目の検証は行いません。
+
+Source／Claim／Evidenceのテストも、実際の画面のsetup処理とメモリ上のVue Routerを使い、HTTP応答・通知を差し替えます。
+年の空欄、URL、所属Project、初期status、改行保持、送信抑止、Project切替後の古い結果の抑止、Sourceモーダルの状態、Source不在後の再選択を検証します。
+このテストは実ブラウザ上の描画・クリック・キーボード操作の検証にはなりません。
+
+開発環境では、Source作成→ProjectのClaim作成→Evidence作成を辿り、登録内容が一覧と詳細へ反映されることを確認します。
+モーダルでSourceを追加してもEvidenceの入力が残ること、キャンセルではEvidenceを送信しないこと、狭い画面での表示と検索・キーボード操作も確認します。
 
 - 一覧の上部・空状態から作成画面を開ける。キャンセルでは登録せず一覧へ戻る。
 - 空欄・空白だけのタイトルは送信されない。正常作成時は成功通知と作成したProjectの空Claim一覧を表示する。

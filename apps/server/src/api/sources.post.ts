@@ -5,7 +5,7 @@ import { readJsonBody } from '../utils/validation.js'
 
 export default defineHandler(async (event) => {
   const body = await readJsonBody(event, createSourceSchema)
-  const source = await insertSource(body.title, body.type, body.year)
+  const source = await insertSource(body.title, body.type, body.year, body.url)
   event.res.status = 201
   return source
 })

@@ -1,0 +1,25 @@
+info:
+  name: Create Evidence - empty content (400)
+  type: http
+  seq: 28
+
+http:
+  method: POST
+  url: http://localhost:3000/api/evidences
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      { "projectId": "bf7b999a-6c43-455b-be79-2ceb05ccff89", "sourceId": "0bac506e-eb8e-4b2f-9c00-5787deeb2b31", "quote": "  ", "summary": null }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("引用と要約の両方が空なら400", function () {
+          expect(res.getStatus()).to.equal(400);
+          expect(res.getBody()).to.equal("Invalid input");
+        });

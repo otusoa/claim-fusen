@@ -5,20 +5,24 @@ import health from '~~/src/routes/health.get'
 import getProjects from '../src/api/projects.get.js'
 import postProject from '../src/api/projects.post.js'
 import postSource from '../src/api/sources.post.js'
+import getSources from '../src/api/sources.get.js'
 import postClaim from '../src/api/claims.post.js'
 import getClaim from '~/api/claims/[claimId].get'
 import getClaims from '~/api/claims.get'
 import postEvidence from '../src/api/evidences.post.js'
+import getEvidences from '../src/api/evidences.get.js'
 import postClaimEvidence from '../src/api/claims/[claimId]/evidences.post.js'
 
 const services = vi.hoisted(() => ({
   listProjects: vi.fn(),
   insertProject: vi.fn(),
   insertSource: vi.fn(),
+  listSources: vi.fn(),
   insertClaim: vi.fn(),
   findClaimById: vi.fn(),
   listClaimsByProject: vi.fn(),
   insertEvidence: vi.fn(),
+  listEvidencesByProject: vi.fn(),
   insertClaimEvidence: vi.fn(),
 }))
 
@@ -26,13 +30,13 @@ vi.mock('../src/services/projects.js', () => ({
   listProjects: services.listProjects,
   insertProject: services.insertProject,
 }))
-vi.mock('../src/services/sources.js', () => ({ insertSource: services.insertSource }))
+vi.mock('../src/services/sources.js', () => ({ insertSource: services.insertSource, listSources: services.listSources }))
 vi.mock('../src/services/claims.js', () => ({
   insertClaim: services.insertClaim,
   findClaimById: services.findClaimById,
   listClaimsByProject: services.listClaimsByProject,
 }))
-vi.mock('../src/services/evidences.js', () => ({ insertEvidence: services.insertEvidence }))
+vi.mock('../src/services/evidences.js', () => ({ insertEvidence: services.insertEvidence, listEvidencesByProject: services.listEvidencesByProject }))
 vi.mock('../src/services/claim-evidences.js', () => ({ insertClaimEvidence: services.insertClaimEvidence }))
 
 const projectId = 'd711468b-127f-486d-9a8b-bd7dd21e8db2'
@@ -48,10 +52,12 @@ const app = new H3({
   .get('/api/projects', getProjects)
   .post('/api/projects', postProject)
   .post('/api/sources', postSource)
+  .get('/api/sources', getSources)
   .post('/api/claims', postClaim)
   .get('/api/claims', getClaims)
   .get('/api/claims/:claimId', getClaim)
   .post('/api/evidences', postEvidence)
+  .get('/api/evidences', getEvidences)
   .post('/api/claims/:claimId/evidences', postClaimEvidence)
 
 function post(path: string, body: unknown) {
@@ -94,7 +100,35 @@ describe('Nitro HTTP API contract', () => {
     const response = await post('/api/sources', { title: ' 本教大意 ', type: null, year: 1888 })
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual(source)
-    expect(services.insertSource).toHaveBeenCalledWith('本教大意', null, 1888)
+    expect(services.insertSource).toHaveBeenCalledWith('本教大意', null, 1888, undefined)
+  })
+
+  it.each([{ sources: [] }, { sources: [{ id: sourceId, title: '出典', url: 'https://example.com/', updatedAt: new Date('2026-11-13T00:00:00Z') }] }])('lists shared sources', async ({ sources }) => {
+    services.listSources.mockResolvedValue(sources)
+    const response = await app.fetch(new Request('http://localhost/api/sources'))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual(JSON.parse(JSON.stringify(sources)))
+    expect(services.listSources).toHaveBeenCalledExactlyOnceWith()
+  })
+
+  it('hides internal errors when listing sources', async () => {
+    services.listSources.mockRejectedValue(new Error('secret SQL'))
+    const response = await app.fetch(new Request('http://localhost/api/sources'))
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ error: 'Internal Server Error' })
+  })
+
+  it.each(['http://example.com/', 'https://example.com/paper'])('creates a source with URL %s', async (url) => {
+    services.insertSource.mockResolvedValue({ id: sourceId, title: '出典', url })
+    const response = await post('/api/sources', { title: '出典', url })
+    expect(response.status).toBe(201)
+    expect(services.insertSource).toHaveBeenCalledWith('出典', undefined, undefined, url)
+  })
+
+  it.each(['javascript:alert(1)', 'data:text/html,test', '/paper', '//example.com', 'ftp://example.com', 'invalid'])('rejects source URL %s', async (url) => {
+    const response = await post('/api/sources', { title: '出典', url })
+    expect(response.status).toBe(400)
+    expect(services.insertSource).not.toHaveBeenCalled()
   })
 
   it('creates a claim with the default active status', async () => {
@@ -206,6 +240,56 @@ describe('Nitro HTTP API contract', () => {
     expect(services.insertEvidence).toHaveBeenCalledWith(input)
   })
 
+  it('lists only the requested Project with nested Source and serialized dates', async () => {
+    const data = [{ id: evidenceId, projectId, sourceId, quote: ' 引用\n ', source: { id: sourceId, title: '出典', year: null }, updatedAt: new Date('2026-11-13T00:00:00Z') }]
+    services.listEvidencesByProject.mockResolvedValue(data)
+    const response = await app.fetch(new Request(`http://localhost/api/evidences?projectId=${projectId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual(JSON.parse(JSON.stringify(data)))
+    expect(services.listEvidencesByProject).toHaveBeenCalledExactlyOnceWith(projectId)
+  })
+
+  it('returns an empty Evidence list for an existing Project', async () => {
+    services.listEvidencesByProject.mockResolvedValue([])
+    const response = await app.fetch(new Request(`http://localhost/api/evidences?projectId=${projectId}`))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual([])
+  })
+
+  it('returns 404 for a missing Project when listing Evidence', async () => {
+    services.listEvidencesByProject.mockResolvedValue(null)
+    const response = await app.fetch(new Request(`http://localhost/api/evidences?projectId=${projectId}`))
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('Project not found')
+  })
+
+  it.each(['', '?projectId=', '?projectId=invalid', `?projectId=${projectId}&projectId=${sourceId}`])('rejects invalid Evidence query %s', async (query) => {
+    const response = await app.fetch(new Request(`http://localhost/api/evidences${query}`))
+    expect(response.status).toBe(400)
+    expect(services.listEvidencesByProject).not.toHaveBeenCalled()
+  })
+
+  it('hides internal errors when listing Evidence', async () => {
+    services.listEvidencesByProject.mockRejectedValue(new Error('secret SQL'))
+    const response = await app.fetch(new Request(`http://localhost/api/evidences?projectId=${projectId}`))
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ error: 'Internal Server Error' })
+  })
+
+  it.each([{ quote: undefined, summary: undefined }, { quote: null, summary: null }, { quote: '', summary: '' }, { quote: ' \n\t ', summary: '\n ' }])('rejects Evidence without quote or summary', async (content) => {
+    const response = await post('/api/evidences', { projectId, sourceId, ...content })
+    expect(response.status).toBe(400)
+    expect(services.insertEvidence).not.toHaveBeenCalled()
+  })
+
+  it.each([{ quote: ' 引用\n ', summary: null }, { quote: null, summary: ' 要約\n ' }])('allows either quote or summary alone without changing whitespace', async (content) => {
+    const data = { projectId, sourceId, ...content }
+    services.insertEvidence.mockResolvedValue({ evidence: { id: evidenceId, ...data } })
+    const response = await post('/api/evidences', data)
+    expect(response.status).toBe(201)
+    expect(services.insertEvidence).toHaveBeenCalledWith(data)
+  })
+
   it.each(['supports', 'challenges', 'contextualizes', 'corresponds'])('creates a %s relation from the URL claim ID', async (type) => {
     const input = { evidenceId, type, note: null }
     const relation = { id: 'relation-id', claimId, ...input }
@@ -221,7 +305,7 @@ describe('Nitro HTTP API contract', () => {
     ['/api/sources', { title: '史料', year: 1.5 }],
     ['/api/claims', { projectId: 'not-a-uuid', title: '主張' }],
     ['/api/claims', { projectId, title: '主張', status: 'invalid' }],
-    ['/api/evidences', { projectId, sourceId: 'not-a-uuid' }],
+    ['/api/evidences', { projectId, sourceId: 'not-a-uuid', quote: '引用' }],
     [relationPath, { evidenceId, type: 'related' }],
     ['/api/claims/not-a-uuid/evidences', { evidenceId, type: 'supports' }],
   ])('rejects invalid input at %s before calling a service', async (path, input) => {
@@ -256,7 +340,7 @@ describe('Nitro HTTP API contract', () => {
     ['source_not_found', 'Source not found'],
   ])('reports %s when creating evidence', async (error, message) => {
     services.insertEvidence.mockResolvedValue({ error })
-    const response = await post('/api/evidences', { projectId, sourceId })
+    const response = await post('/api/evidences', { projectId, sourceId, quote: '引用' })
     expect(response.status).toBe(404)
     expect(await response.text()).toBe(message)
   })

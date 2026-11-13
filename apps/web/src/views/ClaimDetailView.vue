@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import type { ClaimEvidenceType, ClaimStatus } from '@kari-fusen/schemas'
 import { ClaimsRequestError, getClaim, type ClaimDetail } from '@/api/claims'
 import { sourceUrl } from '@/utils/source-url'
+import ProjectNav from '@/components/ProjectNav.vue'
 
 const props = defineProps<{ claimId: string }>()
 const claim = ref<ClaimDetail | null>(null)
@@ -59,6 +60,7 @@ watch([() => props.claimId, reloadKey], async ([claimId], _, onCleanup) => {
       class="mb-6 px-0"
     />
     <UButton v-else to="/projects" label="Project一覧へ戻る" color="neutral" variant="link" class="mb-6 px-0" />
+    <ProjectNav v-if="claim" :project-id="claim.projectId" />
 
     <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
       <div class="min-w-0 flex-1">
