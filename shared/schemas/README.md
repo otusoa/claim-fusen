@@ -1,6 +1,6 @@
 # 共有API入力スキーマ
 
-serverとwebで使う入力チェック、許可値、入力型を定義します。
+serverで使う入力チェック、許可値、入力型を定義します。今後のFrontend再構築でも共有できるパッケージです。
 DB接続や参照先の存在確認はserverのServiceに置きます。
 
 Sourceのurlは任意で、HTTP／HTTPSの絶対URLに限定します。

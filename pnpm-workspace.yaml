@@ -5,9 +5,5 @@ packages:
 # Keep the existing per-package lockfiles while linking workspace packages.
 sharedWorkspaceLockfile: false
 
-overrides:
-  '@kari-fusen/web>typescript': 'npm:typescript-native-bridge@6.0.3-bridge.18.tsgo.7.0.2'
-
 allowBuilds:
   esbuild: true
-  vue-demi: true

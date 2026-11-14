@@ -5,8 +5,6 @@ node_modules/
 dist/
 .output/
 .nitro/
-apps/web/auto-imports.d.ts
-apps/web/components.d.ts
 .codex
 .aws
 .agets

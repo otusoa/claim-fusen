@@ -1,7 +1,7 @@
 # Nitro v3 Backend
 
 バックエンドはNitro v3の単体サーバーです。公開版 `nitro@3.0.260903-beta` を固定して使用しています。
-Frontendは既存のVue / Vite SPAのままです。
+APIを先に整備する方針です。既存のFrontendは削除し、APIが概ね揃った後に再構築します。
 
 参考資料：
 
