@@ -1,0 +1,29 @@
+info:
+  name: Remove relation (204)
+  type: http
+  seq: 44
+
+http:
+  method: DELETE
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences/7bd62ce0-43b7-4e4b-a558-dc38d941e620
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(204);
+          expect(res.getBody()).to.be.oneOf(["", null, undefined]);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  URLを解除対象のClaim・関係IDへ置き換える。関係だけを削除し、Claim・Evidence・Sourceは残す。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

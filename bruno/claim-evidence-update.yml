@@ -1,0 +1,40 @@
+info:
+  name: Update relation (200)
+  type: http
+  seq: 33
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences/7bd62ce0-43b7-4e4b-a558-dc38d941e620
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "type": "supports",
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().type).to.equal("supports");
+          expect(res.getBody().note).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  関係IDは作成レスポンスまたはClaim詳細のclaimEvidences[].idに置き換える。現在と同じtypeでも200。noteだけでも更新できる。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

@@ -1,0 +1,39 @@
+info:
+  name: Update Evidence missing Source (404)
+  type: http
+  seq: 41
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/evidences/6e9a1287-3836-473d-8e43-6d58dcf0d279
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "sourceId": "d711468b-127f-486d-9a8b-bd7dd21e8db2",
+        "quote": "有効な引用"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(404);
+          expect(res.getBody()).to.equal("Source not found");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  既存Evidence IDと存在しないSource IDへ置き換える。入力条件は満たして参照先不在を確認する。引用を含め変更は保存されない。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

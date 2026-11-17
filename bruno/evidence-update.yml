@@ -1,0 +1,42 @@
+info:
+  name: Update Evidence (200)
+  type: http
+  seq: 32
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/evidences/6e9a1287-3836-473d-8e43-6d58dcf0d279
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "quote": " 引用\n2行目 ",
+        "summary": null,
+        "locator": null,
+        "note": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().quote).to.equal(" 引用\n2行目 ");
+          expect(res.getBody().summary).to.equal(null);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  引用の空白・改行を維持する。sourceIdを省略して既存出典を維持する。sourceIdを別SourceのUUIDにすると出典を変更できる。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

@@ -4,7 +4,28 @@ import { projects } from '../db/schema/projects.js'
 import { sources } from '../db/schema/sources.js'
 import { evidences } from '../db/schema/evidences.js'
 
-import type { CreateEvidenceData } from '@kari-fusen/schemas'
+import { createEvidenceSchema, type CreateEvidenceData, type UpdateEvidenceData } from '@kari-fusen/schemas'
+
+export async function findEvidenceById(evidenceId: string) {
+  return await db.query.evidences.findFirst({ where: eq(evidences.id, evidenceId), with: { source: true } }) ?? null
+}
+
+export async function updateEvidence(evidenceId: string, input: UpdateEvidenceData) {
+  return db.transaction(async (tx) => {
+    // 行をロックして、同時更新でも引用と要約の両方が消えないようにする。
+    const [existing] = await tx.select().from(evidences).where(eq(evidences.id, evidenceId)).for('update')
+    if (!existing) return { error: 'evidence_not_found' } as const
+    const patch = Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined))
+    if (!createEvidenceSchema.safeParse({ ...existing, ...patch }).success) return { error: 'invalid_input' } as const
+    if (input.sourceId !== undefined) {
+      const [source] = await tx.select({ id: sources.id }).from(sources).where(eq(sources.id, input.sourceId)).for('key share')
+      if (!source) return { error: 'source_not_found' } as const
+    }
+    const [evidence] = await tx.update(evidences).set({ ...input, updatedAt: new Date() })
+      .where(eq(evidences.id, evidenceId)).returning()
+    return { evidence: evidence! }
+  })
+}
 
 export async function listEvidencesByProject(projectId: string) {
   const project = await db.query.projects.findFirst({ columns: { id: true }, where: eq(projects.id, projectId) })

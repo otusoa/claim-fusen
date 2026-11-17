@@ -1,0 +1,29 @@
+info:
+  name: Remove relation again (404)
+  type: http
+  seq: 45
+
+http:
+  method: DELETE
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences/7bd62ce0-43b7-4e4b-a558-dc38d941e620
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(404);
+          expect(res.getBody()).to.equal("Relation not found");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  直前に解除した関係と同じURLで送信する。Claim自体は存在すること。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

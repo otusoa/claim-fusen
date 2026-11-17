@@ -1,0 +1,31 @@
+info:
+  name: Get Evidence detail (200)
+  type: http
+  seq: 37
+
+http:
+  method: GET
+  url: http://localhost:3000/api/evidences/6e9a1287-3836-473d-8e43-6d58dcf0d279
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          const body = res.getBody();
+          expect(body.id).to.equal("6e9a1287-3836-473d-8e43-6d58dcf0d279");
+          expect(body.source.id).to.equal(body.sourceId);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Evidenceを単体で返し、sourceを含む。URLとTests内のIDを置き換える。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

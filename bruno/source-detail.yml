@@ -1,0 +1,30 @@
+info:
+  name: Get Source detail (200)
+  type: http
+  seq: 36
+
+http:
+  method: GET
+  url: http://localhost:3000/api/sources/0bac506e-eb8e-4b2f-9c00-5787deeb2b31
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().id).to.equal("0bac506e-eb8e-4b2f-9c00-5787deeb2b31");
+          expect(res.getBody()).to.have.property("metadata");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  Sourceを単体で返す。URLとTests内のIDを置き換える。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

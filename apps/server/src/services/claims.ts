@@ -3,6 +3,7 @@ import { db } from '../pool.js'
 import { projects } from '../db/schema/projects.js'
 import { claims } from '../db/schema/claims.js'
 import type { CreateClaimData } from '@kari-fusen/schemas'
+import type { UpdateClaimData } from '@kari-fusen/schemas'
 
 export async function listClaimsByProject(projectId: string) {
   const project = await db.query.projects.findFirst({
@@ -57,4 +58,12 @@ export async function insertClaim(input: CreateClaimData) {
     })
     .returning()
   return newClaim
+}
+
+export async function updateClaim(claimId: string, input: UpdateClaimData) {
+  const [claim] = await db.update(claims)
+    .set({ ...input, updatedAt: new Date() })
+    .where(eq(claims.id, claimId))
+    .returning()
+  return claim ?? null
 }

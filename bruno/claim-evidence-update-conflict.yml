@@ -1,0 +1,39 @@
+info:
+  name: Update relation conflict (409)
+  type: http
+  seq: 34
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/claims/e176856c-1673-4ec2-b22a-b01f14717c4e/evidences/7bd62ce0-43b7-4e4b-a558-dc38d941e620
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "type": "challenges",
+        "note": "保存されないメモ"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(409);
+          expect(res.getBody()).to.equal("Relation already exists");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  同じClaimとEvidenceにsupportsとchallengesを作り、supportsの関係IDをURLへ設定する。409後のGET詳細でtype・noteが保存前のままであることを確認する。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

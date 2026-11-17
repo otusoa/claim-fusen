@@ -1,0 +1,38 @@
+info:
+  name: Update Project (200)
+  type: http
+  seq: 30
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/projects/bf7b999a-6c43-455b-be79-2ceb05ccff89
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "description": " 説明\n2行目 "
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().description).to.equal(" 説明\n2行目 ");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  説明の空白・改行を維持する。descriptionをnullにすると消去できる。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。

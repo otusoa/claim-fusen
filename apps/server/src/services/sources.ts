@@ -1,7 +1,17 @@
 import { db } from '../pool.js'
-import { asc, desc } from 'drizzle-orm'
+import { asc, desc, eq } from 'drizzle-orm'
 import { sources } from '../db/schema/sources.js'
-import type { CreateSourceData } from '@kari-fusen/schemas'
+import type { CreateSourceData, UpdateSourceData } from '@kari-fusen/schemas'
+
+export async function updateSource(sourceId: string, input: UpdateSourceData) {
+  const [source] = await db.update(sources).set({ ...input, updatedAt: new Date() })
+    .where(eq(sources.id, sourceId)).returning()
+  return source ?? null
+}
+
+export async function findSourceById(sourceId: string) {
+  return await db.query.sources.findFirst({ where: eq(sources.id, sourceId) }) ?? null
+}
 
 export async function listSources() {
   return db.query.sources.findMany({ orderBy: [desc(sources.updatedAt), asc(sources.id)] })

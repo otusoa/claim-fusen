@@ -1,0 +1,42 @@
+info:
+  name: Update Source (200)
+  type: http
+  seq: 31
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/sources/0bac506e-eb8e-4b2f-9c00-5787deeb2b31
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "type": null,
+        "year": null,
+        "url": "https://example.com/updated"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status and response", function () {
+          expect(res.getStatus()).to.equal(200);
+          expect(res.getBody().type).to.equal(null);
+          expect(res.getBody().year).to.equal(null);
+          expect(res.getBody().url).to.equal("https://example.com/updated");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
+
+docs: |-
+  共有出典を更新する。title・metadata・createdAtは維持する。すべての参照先に変更が反映される。
+  UUIDはサンプル。開発用DBの作成結果に合わせてURL・Body・Testsを修正する。
